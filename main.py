@@ -1,12 +1,18 @@
 import tkinter as tk
 from tkinter import messagebox
 import random
+from playsound import playsound
+import threading  # to play sound without freezing UI
 
 # Global variables
 user_score = 0
 computer_score = 0
 ties = 0
 game_running = False
+
+# Play sound safely (threaded so GUI doesn’t lag)
+def play_sound(filename):
+    threading.Thread(target=lambda: playsound(filename), daemon=True).start()
 
 def start_game():
     global game_running, user_score, computer_score, ties
@@ -16,10 +22,12 @@ def start_game():
     user_choice_label.config(image="", text="You")
     computer_choice_label.config(image="", text="Computer")
     result_label.config(text="Game Started! Choose Rock, Paper, or Scissors.", fg="black")
+    play_sound("click.wav")
 
 def stop_game():
     global game_running
     game_running = False
+    play_sound("click.wav")
     messagebox.showinfo("Game Over", f"Final Score:\nYou: {user_score}\nComputer: {computer_score}\nTies: {ties}")
 
 def restart_game():
@@ -29,12 +37,14 @@ def restart_game():
     user_choice_label.config(image="", text="You")
     computer_choice_label.config(image="", text="Computer")
     result_label.config(text="Game Restarted! Choose Rock, Paper, or Scissors.", fg="purple")
+    play_sound("click.wav")
 
 def play(user_choice):
     global user_score, computer_score, ties, game_running
 
     if not game_running:
         result_label.config(text="Click 'Start' to play!", fg="orange")
+        play_sound("click.wav")
         return
 
     choices = ["rock", "paper", "scissors"]
@@ -48,6 +58,7 @@ def play(user_choice):
     if user_choice == computer_choice:
         ties += 1
         result_label.config(text="It's a tie!", fg="blue")
+        play_sound("tie.wav")
     elif (
         (user_choice == "rock" and computer_choice == "scissors") or
         (user_choice == "scissors" and computer_choice == "paper") or
@@ -55,9 +66,11 @@ def play(user_choice):
     ):
         user_score += 1
         result_label.config(text="You win! 🎉", fg="green")
+        play_sound("win.wav")
     else:
         computer_score += 1
         result_label.config(text="Computer wins! 😢", fg="red")
+        play_sound("lose.wav")
 
     update_score()
 
